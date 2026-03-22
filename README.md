@@ -1,278 +1,172 @@
-# Modulo 3 - RealEstate Hub API
+# 🏢 Módulo 3 - Real Estate Hub API
 
-## Full-Stack: Backend API + Frontend React
-
-> Proyecto completo con backend Express/Prisma y frontend React que lo consume.
+**Full-Stack Single Page Application & REST API**
+Evolución del portal inmobiliario hacia una arquitectura cliente-servidor completa. Este proyecto conecta el frontend moderno desarrollado en **React 19** con un backend robusto construido sobre **Node.js, Express y Prisma ORM**. Permite la gestión centralizada de propiedades abandonando el `localStorage` en favor de una base de datos relacional (SQLite).
 
 ---
 
-## Estructura del Proyecto
+## 💻 Stack Tecnológico
+
+El proyecto se divide en dos capas, implementando las mejores prácticas y tecnologías modernas para cada entorno:
+
+### Backend (API REST)
+| Dependencia | Versión | Propósito |
+| :--- | :--- | :--- |
+| **Express** | 5.2.1 | Framework web minimalista para Node.js |
+| **Prisma** | 7.2.0 | ORM Type-Safe de próxima generación |
+| **TypeScript** | 5.9.3 | Tipado estático para código robusto |
+| **Zod** | 4.1.9 | Validación de esquemas en tiempo de ejecución |
+| **better-sqlite3** | 11.8.1 | Adaptador de alto rendimiento para SQLite |
+
+### Frontend (SPA)
+| Dependencia | Versión | Propósito |
+| :--- | :--- | :--- |
+| **React** | 19.2.1 | Biblioteca UI Core |
+| **Vite** | 7.3.0 | Build tool & Dev Server ultrarrápido |
+| **Tailwind CSS** | 4.1.8 | Framework de estilos (Motor v4 nativo) |
+| **Shadcn UI** | Manual | Componentes UI reutilizables |
+
+---
+
+## 🧠 Conceptos Clave Implementados
+
+Este módulo marca la transición a un entorno Full-Stack, cubriendo los siguientes conceptos arquitectónicos y prácticos:
+
+* **Arquitectura Cliente-Servidor (CORS):** Separación clara entre el Frontend (Puerto 3001) y el Backend (Puerto 3002), comunicándose mediante peticiones HTTP asíncronas (`fetch`).
+* **Diseño de API RESTful:** Estructuración de endpoints semánticos (GET, POST, PUT, DELETE) y respuestas estandarizadas (`{ success, data, meta, error }`).
+* **Patrón Repository & Controller:** Separación de la lógica de enrutamiento, la lógica de negocio y la capa de acceso a datos.
+* **Prisma ORM & SQLite:** Modelado de la base de datos mediante `schema.prisma`, migraciones dinámicas y uso de *Seeders* para inyectar datos de prueba.
+* **Paginación Backend:** Manejo de grandes volúmenes de datos enviando solo fragmentos específicos (`page`, `limit`) en lugar de toda la colección.
+
+---
+
+## 🏗️ Arquitectura de la Aplicación
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              ARQUITECTURA FULL-STACK                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│    ┌─────────────────────┐         ┌─────────────────────┐                  │
+│    │      FRONTEND       │         │       BACKEND       │                  │
+│    │    (React + Vite)   │         │  (Express + Prisma) │                  │
+│    │    localhost:3001   │         │    localhost:3002   │                  │
+│    └──────────┬──────────┘         └──────────┬──────────┘                  │
+│               │                               │                             │
+│               │  HTTP REST (fetch async)      │                             │
+│               │  GET /api/properties?page=1   │                             │
+│               └───────────────────────────────┤                             │
+│                                               │                             │
+│                                               ▼                             │
+│                                    ┌─────────────────────┐                  │
+│                                    │      DATABASE       │                  │
+│                                    │      (SQLite)       │                  │
+│                                    │   prisma/dev.db     │                  │
+│                                    └─────────────────────┘                  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
 
 ```
-module3-realestate-hub-api/
-├── backend/                 # API REST con Express y Prisma
-│   ├── src/
-│   │   ├── server.ts
-│   │   ├── controllers/
-│   │   ├── repositories/
-│   │   ├── routes/
-│   │   └── types/
-│   ├── prisma/
-│   │   ├── schema.prisma
-│   │   └── seed.ts
-│   └── package.json
-│
-├── frontend/                # React SPA que consume la API
-│   ├── src/
-│   │   ├── services/api.ts # Llamadas fetch a la API con propertyService
-│   │   ├── pages/
-│   │   └── components/
-│   └── package.json
-│
-├── slides/                  # Presentacion del modulo
-└── README.md                # Esta documentacion
-```
+
+# 🚀 Instalación y Configuración
+
+## Prerrequisitos
+- Node.js 20.19+ o 22.12+
+- npm 10+
+
+> ⚠️ Importante: Necesitarás dos terminales abiertas simultáneamente.
 
 ---
 
-## Stack Tecnologico
-
-### Backend
-
-| Dependencia | Version |
-|-------------|---------|
-| Express | 5.2.1 |
-| Prisma | 7.2.0 |
-| TypeScript | 5.9.3 |
-| Zod | 4.1.9 |
-
-### Frontend
-
-| Dependencia | Version |
-|-------------|---------|
-| React | 19.2.1 |
-| Vite | 7.3.0 |
-| TypeScript | 5.9.3 |
-| Tailwind CSS | 4.1.8 |
-
----
-
-## Inicio Rapido
-
-### 1. Backend
+## 1. Configurar el Backend (Terminal 1)
 
 ```bash
 cd backend
 
-# Instalar dependencias
+# 1. Instalar dependencias (con legacy-peer-deps por Prisma 7)
 npm install --legacy-peer-deps
 
-# Generar cliente Prisma
-npm run db:generate
+# 2. Sincronizar el esquema con la base de datos
+npx prisma db push
 
-# Crear base de datos
-npm run db:push
-
-# Sembrar datos de ejemplo
+# 3. Poblar la base de datos con información de prueba
 npm run db:seed
 
-# Iniciar servidor (puerto 3002)
+# 4. Iniciar el servidor backend (Correrá en el puerto 3002)
 npm run dev
 ```
 
-### 2. Frontend
+---
+
+## 2. Configurar el Frontend (Terminal 2)
 
 ```bash
 cd frontend
 
-# Instalar dependencias
+# 1. Instalar dependencias
 npm install --legacy-peer-deps
 
-# Iniciar servidor (puerto 3001)
+# 2. Iniciar el servidor frontend (Correrá en el puerto 3001)
 npm run dev
 ```
 
-### 3. Abrir en navegador
-
-- Frontend: http://localhost:3001
-- API: http://localhost:3002/api/properties
-
 ---
 
-## Arquitectura
+## 📂 Estructura del Directorio Principal
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              ARQUITECTURA                                    │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│    ┌─────────────────────┐         ┌─────────────────────┐                  │
-│    │      FRONTEND       │         │       BACKEND       │                  │
-│    │    (React + Vite)   │         │  (Express + Prisma) │                  │
-│    │    localhost:3001   │         │   localhost:3002    │                  │
-│    └──────────┬──────────┘         └──────────┬──────────┘                  │
-│               │                               │                              │
-│               │  HTTP REST (fetch)            │                              │
-│               │  GET/POST/PUT/DELETE          │                              │
-│               └───────────────────────────────┤                              │
-│                                               │                              │
-│                                               ▼                              │
-│                                    ┌─────────────────────┐                  │
-│                                    │      DATABASE       │                  │
-│                                    │      (SQLite)       │                  │
-│                                    │    prisma/dev.db    │                  │
-│                                    └─────────────────────┘                  │
-│                                                                              │
-└─────────────────────────────────────────────────────────────────────────────┘
+```text
+module3-realestate-hub-api/
+├── backend/                 # API REST (Express + Prisma)
+│   ├── prisma/
+│   │   ├── schema.prisma    # Modelado de Base de Datos
+│   │   ├── seed.ts          # Script de inyección de datos
+│   │   └── dev.db           # Archivo físico de SQLite
+│   ├── src/
+│   │   ├── controllers/     # Lógica de peticiones (ej. Paginación)
+│   │   ├── middlewares/     # Interceptores (CORS, Errores)
+│   │   ├── repositories/    # Consultas a base de datos
+│   │   ├── routes/          # Definición de Endpoints
+│   │   └── server.ts        # Punto de entrada Express
+│   └── package.json
+│
+├── frontend/                # Aplicación Cliente (React)
+│   ├── src/
+│   │   ├── components/      # UI y Vistas
+│   │   ├── pages/           # Rutas del SPA
+│   │   ├── services/
+│   │   │   └── api.ts       # Wrapper para llamadas Fetch a la API
+│   │   └── main.tsx
+│   └── package.json
+└── README.md
 ```
 
 ---
 
-## Configuracion de Puertos
+## 📄 Parte 1: Paginación de Resultados y Metadatos (API)
 
-Frontend y backend corren en puertos separados para simular un entorno de produccion:
+El endpoint de listado de propiedades devolvía todos los registros de la base de datos a la vez, lo cual no es escalable ni eficiente para el frontend.
 
-| Componente | Puerto | URL |
-|------------|--------|-----|
-| Frontend (Vite) | 3001 | http://localhost:3001 |
-| Backend (Express) | 3002 | http://localhost:3002 |
+Se Implementó un sistema de paginación a través de parámetros de consulta (query params) y enriquecer la respuesta JSON con metadatos de navegación.
 
-### Conectividad
+## Funcionalidades Implementadas
 
-El frontend se conecta al backend usando la URL base definida en `frontend/src/services/api.ts`:
+- **Extracción de Parámetros:**  
+  Lectura y validación de `?page=` y `?limit=` desde la URL, asignando valores por defecto (página 1, 10 ítems) si no se proporcionan.
 
-```typescript
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
-```
+- **Paginación en Memoria:**  
+  Implementación de `Array.slice()` en el controlador para segmentar los resultados de forma segura sin alterar la lógica de filtrado del repositorio.
 
-El backend tiene CORS configurado para aceptar peticiones desde el frontend:
+- **Cálculo de Metadatos:**  
+  Generación dinámica del total de registros (`total`) y cálculo matemático de las páginas disponibles (`pages`) usando `Math.ceil()`.
 
-```typescript
-// backend/src/server.ts
-app.use(cors({
-  origin: 'http://localhost:3001'
-}));
-```
+- **Respuesta Estructurada:**  
+  Modificación del payload de salida para incluir el bloque de información `meta` junto al bloque `data`.
 
+- **Soporte de Base de Datos:**  
+  Actualización del motor de Prisma para soportar el adaptador `better-sqlite3` durante la inyección de datos de prueba (Seed).
 ---
 
-## Refactorizacion del Frontend
-
-El frontend (copia del Modulo 2) fue refactorizado para usar la API en lugar de localStorage:
-
-### Cambios principales
-
-| Archivo | Antes (Modulo 2) | Despues (Modulo 3) |
-|---------|------------------|---------------------|
-| `lib/storage.ts` | localStorage sync | No usado |
-| `services/api.ts` | No existia | fetch() async (Wrapper) |
-| `pages/HomePage.tsx` | `filterProperties()` sync | `await filterProperties()` async |
-| `pages/NewPropertyPage.tsx` | `createProperty()` sync | `await createProperty()` async |
-| `pages/PropertyDetailPage.tsx` | `getPropertyById()` sync | `await getPropertyById()` async |
-
-### Patron de refactorizacion
-
-```typescript
-// ANTES (Modulo 2): Operaciones sincronas
-const loadProperties = useCallback(() => {
-  const filtered = filterProperties(filters);
-  setProperties(filtered);
-}, [filters]);
-
-// DESPUES (Modulo 3): Operaciones asincronas
-const loadProperties = useCallback(async () => {
-  setIsLoading(true);
-  try {
-    const filtered = await filterProperties(filters);
-    setProperties(filtered);
-  } finally {
-    setIsLoading(false);
-  }
-}, [filters]);
+```text
+Link al video Explicativo:
 ```
-
-### Estado de carga
-
-Se agrego estado `isLoading` para mostrar indicadores mientras se cargan datos:
-
-```typescript
-const [isLoading, setIsLoading] = useState(true);
-
-// En el JSX
-{isLoading ? (
-  <p>Cargando propiedades...</p>
-) : (
-  <PropertyList properties={properties} />
-)}
-```
-
----
-
-## Contexto Pedagogico
-
-Este modulo demuestra la transicion de una app con localStorage (Modulo 2) a una arquitectura cliente-servidor:
-
-### De localStorage a API REST
-
-```typescript
-// Modulo 2: Datos locales (sincrono)
-const properties = getAllProperties();
-
-// Modulo 3: Datos del servidor (async)
-const properties = await fetch('/api/properties')
-  .then(r => r.json())
-  .then(r => r.data);
-```
-
-### Patron Repository (Backend)
-
-```typescript
-// Controller: maneja HTTP
-export async function getAllProperties(req, res) {
-  const properties = await propertyRepository.findAll(filters);
-  res.json({ success: true, data: properties });
-}
-
-// Repository: acceso a datos
-export const propertyRepository = {
-  async findAll(filters) {
-    return prisma.property.findMany({ where: buildWhere(filters) });
-  }
-};
-```
-
----
-
-## Endpoints de la API
-
-| Metodo | Endpoint               | Descripcion                     |
-|--------|------------------------|---------------------------------|
-| GET    | /health                | Health check                    |
-| GET    | /api/properties        | Listar propiedades (con filtros)|
-| GET    | /api/properties/:id    | Obtener propiedad por ID        |
-| POST   | /api/properties        | Crear nueva propiedad           |
-| PUT    | /api/properties/:id    | Actualizar propiedad            |
-| DELETE | /api/properties/:id    | Eliminar propiedad              |
-
-Ver [backend/API_CONTRACT.md](./backend/API_CONTRACT.md) para documentacion detallada.
-
----
-
-## Notas sobre Instalacion
-
-> **Sobre --legacy-peer-deps**: Este flag es necesario porque algunas dependencias
-> aun no declaran soporte para las versiones mas recientes de TypeScript 5.9,
-> Prisma 7, y Vite 7. El flag permite instalar las dependencias ignorando
-> conflictos de peer dependencies. Las dependencias funcionan correctamente.
-
----
-
-## Licencia
-
-Este proyecto es de uso educativo y fue creado como material de aprendizaje.
-
----
-
-## Creditos
-
-> Este proyecto ha sido generado usando Claude Code y adaptado con fines educativos por Adrian Catalan.
+https://youtu.be/Pvbm3bgOr50
