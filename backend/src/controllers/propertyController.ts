@@ -82,7 +82,7 @@ export async function getAllProperties(req: Request, res: Response): Promise<voi
     // 5. Enviamos la respuesta incluyendo 'meta'
     res.json({
       success: true,
-      data: properties,
+      data: paginatedData,
     meta: {
         total,
         page,
