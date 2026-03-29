@@ -170,3 +170,12 @@ Se Implementó un sistema de paginación a través de parámetros de consulta (q
 Link al video Explicativo:
 ```
 https://youtu.be/Pvbm3bgOr50
+
+# 📊 Parte 2: Property Statistics
+
+### Implementación Realizada
+Se desarrolló un endpoint de estadísticas que centraliza información agregada de las propiedades, permitiendo obtener insights de forma rápida y eficiente.
+
+```text
+Link al video Explicativo:
+```
