@@ -27,6 +27,7 @@ import type { Request, Response } from 'express';
 import { createPropertySchema, updatePropertySchema, type PropertyFilters } from '../types/property.js';
 import { propertyRepository } from '../repositories/propertyRepository.js';
 
+import { prisma } from '../repositories/propertyRepository.js';
 // =============================================================================
 // GET /api/properties - Listar propiedades con filtros
 // =============================================================================
@@ -268,6 +269,61 @@ export async function deleteProperty(req: Request, res: Response): Promise<void>
         message: 'Error interno del servidor',
         code: 'INTERNAL_ERROR',
       },
+    });
+  }
+}
+
+  // =============================================================================
+// GET /api/properties/stats - Obtener estadísticas
+// =============================================================================
+
+export async function getPropertyStats(_req: Request, res: Response): Promise<void> {
+  try {
+    // Prisma Aggregate: Total, Min y Max le dice a la base de datos que lea toda la tabla y extraiga solo los totales matemáticos
+    // (_count.id, _min.price, _max.price
+    const globalStats = await prisma.property.aggregate({
+      _count: { id: true },
+      _min: { price: true },
+      _max: { price: true },
+    });
+
+    // 2. Prisma GroupBy: Agrupar por tipo para luego contar y promediar
+    const typeStats = await prisma.property.groupBy({
+      by: ['propertyType'],
+      _count: { id: true },
+      _avg: { price: true },
+    });
+
+    // 3. Formatear la respuesta dinámicamente, usamos Record para no crear interfaz
+    const countByType: Record<string, number> = {};
+    const averagePriceByType: Record<string, number> = {};
+
+    typeStats.forEach(stat => {
+      countByType[stat.propertyType] = stat._count.id;
+
+      // Redondeamos el promedio para no tener decimales infinitos
+      // Si el precio mínimo es null o undefined, usa un "0". Esto garantiza que la API siempre devuelva un número seguro      
+      averagePriceByType[stat.propertyType] = Math.round(stat._avg.price || 0); 
+    });
+
+    res.json({
+      success: true,
+      data: {
+        totalCount: globalStats._count.id,
+        priceRange: {
+          min: globalStats._min.price || 0,
+          max: globalStats._max.price || 0,
+        },
+        countByType,
+        averagePriceByType,
+      },
+    });
+  } 
+  catch (error) {
+    console.error('Error al obtener estadísticas:', error);
+    res.status(500).json({
+      success: false,
+      error: { message: 'Error interno del servidor', code: 'INTERNAL_ERROR' },
     });
   }
 }

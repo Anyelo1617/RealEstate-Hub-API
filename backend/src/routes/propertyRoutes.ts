@@ -23,6 +23,7 @@ import {
   createProperty,
   updateProperty,
   deleteProperty,
+  getPropertyStats, //para registrar el endpoint
 } from '../controllers/propertyController.js';
 
 const router = Router();
@@ -48,6 +49,15 @@ const router = Router();
  */
 router.get('/', (req, res) => {
   void getAllProperties(req, res);
+});
+
+//Nueva ruta
+/**
+ * GET /api/properties/stats
+ * Obtiene estadísticas de propiedades (Debe ir ANTES de /:id)
+ */
+router.get('/stats', (req, res) => {
+  void getPropertyStats(req, res);
 });
 
 /**
