@@ -179,3 +179,4 @@ Se desarrolló un endpoint de estadísticas que centraliza información agregada
 ```text
 Link al video Explicativo:
 ```
+https://youtu.be/365O9iFlj_4
